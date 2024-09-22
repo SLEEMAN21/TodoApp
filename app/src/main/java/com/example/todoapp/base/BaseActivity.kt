@@ -9,11 +9,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.todoapp.ui.common.ToolBar
+
 import com.example.todoapp.ui.theme.TODOAPPTheme
 
 abstract class BaseActivity : ComponentActivity() {
 
-    // Each activity will provide their own content
+
     @Composable
     abstract fun Content(modifier: Modifier)
 
@@ -24,7 +25,7 @@ abstract class BaseActivity : ComponentActivity() {
             TODOAPPTheme {
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
-                    topBar = { ToolBar() } // Common ToolBar
+                    topBar = { ToolBar("TODOAPP", true, onBackClick = { finish() }) }
                 ) { innerPadding ->
                     Content(Modifier.padding(innerPadding)) // Calls the child class's content
                 }

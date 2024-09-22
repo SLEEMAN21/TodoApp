@@ -1,5 +1,6 @@
 package com.example.todoapp.listing.screens
-
+import android.content.Intent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,33 +26,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.todoapp.addEdit.screens.EditTaskActivity
 import com.example.todoapp.listing.data.TaskModel
 import com.example.todoapp.ui.theme.TODOAPPTheme
+
+
 import kotlin.random.Random
 
 
-
 @Composable
-fun TodoListScreen(modifier: Modifier, tasks: List<TaskModel>) {
-
+fun TodoListScreen(modifier: Modifier, tasks: List<TaskModel>/*,onDeleteTask: (TaskModel) -> Unit*/) {//هون
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .background(Color(0xFFB3B7EE))
+            .fillMaxSize(),
+
         verticalArrangement = Arrangement.spacedBy(8.dp), // Space between items
         contentPadding = PaddingValues(vertical = 16.dp) // Padding for the whole list
     ) {
         items(tasks) { task -> // Use the generated list of tasks
-            TodoCard(task = task)
+            TodoCard(task = task/*, onDeleteClick = onDeleteTask*/)//هون
         }
     }
 }
 
 
+
 @Composable
 fun TodoCard(task: TaskModel) { // Changed parameter to Task
+    val context = LocalContext.current
     Card(
         shape = RoundedCornerShape(8.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -73,7 +81,7 @@ fun TodoCard(task: TaskModel) { // Changed parameter to Task
                 Text(
                     text = task.title, // Use task.title
                     style = typography.bodyMedium,
-                    color = Color(0xFFb3b3f7),
+                    color = Color(0xFFB3B7EE),
                     fontWeight = FontWeight.Bold
                 )
                 Text(
@@ -87,18 +95,27 @@ fun TodoCard(task: TaskModel) { // Changed parameter to Task
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(onClick = { /* Handle edit click */ }) {
+                IconButton(onClick = {
+                    //اني القيم الموجوده هون ببعثها لل edit عشان يعدل واستقبل القيم الجديده عشان اعرضها علشاشه شلون بدي اطبق هل اشي
+
+                    val intent = Intent(context, EditTaskActivity::class.java).apply {
+                        putExtra("taskTitle", task.title)        // تمرير عنوان المهمة
+                        putExtra("taskSubTitle", task.subTitle)  // تمرير التفاصيل
+                    }
+                    context.startActivity(intent)
+
+                }) {
                     Icon(
                         imageVector = Icons.Default.Edit,
                         contentDescription = "Edit",
-                        tint = Color(0xFFb3b3f7)
+                        tint = Color(0xFFB3B7EE)
                     )
                 }
-                IconButton(onClick = { /* Handle delete click */ }) {
+                IconButton(onClick = { /*onDeleteClick(task)*/  }) {
                     Icon(
                         imageVector = Icons.Default.Delete,
                         contentDescription = "Delete",
-                        tint = Color(0xFFb3b3f7)
+                        tint = Color(0xFFB3B7EE)
                     )
                 }
                 IconButton(onClick = { /* Handle complete click */ }) {
@@ -124,7 +141,7 @@ fun generateRandomTasks(count: Int): List<TaskModel> {
     }
 }
 
-@Preview(showBackground = false)
+@Preview(showBackground = true)
 @Composable
 private fun TodoListScreenPreview() {
     val todoItems = generateRandomTasks(10) // Generate 10 random tasks
@@ -132,3 +149,4 @@ private fun TodoListScreenPreview() {
         TodoListScreen(Modifier, tasks = todoItems)
     }
 }
+
