@@ -15,12 +15,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import com.example.todoapp.ui.theme.TODOAPPTheme
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ToolBar(
     title:String,
-    showBack:Boolean
+    showBack:Boolean=false
     ,    onBackClick: (() -> Unit)? = null
 ) {
     val navigationIconWithBack: @Composable () -> Unit = {
@@ -51,7 +50,7 @@ fun ToolBar(
 @Composable
 private fun ToolBarPreview() {
 
-    TODOAPPTheme{
+    TODOAPPTheme(){
         ToolBar(title = "Todo App", showBack = true)
     }
 }

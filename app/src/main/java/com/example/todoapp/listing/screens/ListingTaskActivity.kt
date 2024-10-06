@@ -13,63 +13,63 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import com.example.todoapp.ui.common.ToolBar
+import com.example.todoapp.addEdit.screens.AddEditTaskActivity
 import com.example.todoapp.base.BaseActivity
-import com.example.todoapp.listing.data.TaskModel
-import com.example.todoapp.listing.data.TaskRepo
-import com.example.todoapp.listing.data.TaskStatus
-import com.example.todoapp.addEdit.screens.AddTaskActivity
-import org.koin.android.ext.android.inject
-import org.koin.java.KoinJavaComponent.inject
-
+import com.example.todoapp.ui.common.ToolBar
+import com.example.todoapp.ui.utils.UiLogger
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class ListingTaskActivity : BaseActivity() {
-    private val repo: TaskRepo by inject()
-
+    private val viewModel: ListingTaskViewModel by viewModel()
 
     @Composable
-    override fun Content(modifier: Modifier) {
+    override fun Content() {
         val context = LocalContext.current
-        var tasks by remember { mutableStateOf(repo.getTasks().toList()) } // State to hold tasks
-
+        val tasks by viewModel.tasksStateFlow.collectAsState()
+        LaunchedEffect(tasks) {
+            UiLogger.log("ListingTask Updated with new tasks: ${tasks.size}")
+        }
         val addTaskLauncher =
             rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                UiLogger.log("On Activity Result arrived with status: ${result.resultCode == RESULT_OK}")
                 if (result.resultCode == RESULT_OK) {
-                    // Refresh the tasks after returning from AddTaskActivity
-                    tasks = repo.getTasks().toList()
+                    viewModel.refreshTasks()
                 }
             }
 
-        Scaffold(
-            modifier = Modifier.fillMaxWidth(),
-            topBar = { ToolBar("ToDoApp", true, onBackClick = { finish() }) }, // Common ToolBar
+        Scaffold(modifier = Modifier.fillMaxWidth(),
+            topBar = { ToolBar("TODO") },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
-                        val intent = Intent(context, AddTaskActivity::class.java)
+                        val intent = Intent(context, AddEditTaskActivity::class.java)
                         addTaskLauncher.launch(intent)
                     }, containerColor = Color(0xFF9395D3), shape = CircleShape
                 ) {
-                    Icon(
-                        Icons.Default.Add, contentDescription = "Add Task", tint = Color.White
-                    )
+                    Icon(Icons.Default.Add, contentDescription = "Add Task", tint = Color.White)
                 }
             },
             floatingActionButtonPosition = FabPosition.End
         ) { innerPadding ->
-            TodoListScreen(
-                modifier = Modifier.padding(innerPadding),
-                tasks = tasks // Pass the state variable to the TodoListScreen
-            )
+            TodoListScreen(modifier = Modifier.padding(innerPadding),
+                tasks = tasks,
+                onDeleteTask = { taskModel ->
+                    viewModel.deleteTask(taskModel)
+                },
+                onEditTask = { taskModel ->
+                    val intent = Intent(context, AddEditTaskActivity::class.java)
+                    intent.putExtra(AddEditTaskActivity.TASK_KEY, taskModel)
+                    addTaskLauncher.launch(intent)
+                },
+                onCompletedTask = { taskModel ->
+                    viewModel.completeTask(taskModel)
+                })
         }
     }
-
-
 }

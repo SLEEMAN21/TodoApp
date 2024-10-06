@@ -1,5 +1,4 @@
 package com.example.todoapp.addEdit.screens
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,17 +26,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.todoapp.listing.data.TaskModel
-
-
+import com.example.todoapp.listing.data.TaskStatus
 @Composable
-fun AddTaskScreen(modifier: Modifier, onAddClick: ((TaskModel) -> Unit)) {
-    var title by remember { mutableStateOf(TextFieldValue("")) }
-    var detail by remember { mutableStateOf(TextFieldValue("")) }
-
-
+fun AddEditTaskScreen(
+    modifier: Modifier,
+    taskModel: TaskModel? = null,
+    onAddClick: (TaskModel) -> Unit,
+    onEditClick: (TaskModel) -> Unit
+) {
+    var title by remember { mutableStateOf(TextFieldValue(taskModel?.title ?: "")) }
+    var subTitle by remember { mutableStateOf(TextFieldValue(taskModel?.subTitle ?: "")) }
 
     Column(
-
         modifier = modifier
             .fillMaxSize()
             .background(Color.White)
@@ -50,33 +50,42 @@ fun AddTaskScreen(modifier: Modifier, onAddClick: ((TaskModel) -> Unit)) {
             onValueChange = { title = it },
             label = { Text(text = "Title") },
             modifier = Modifier.fillMaxWidth()
-
         )
-
 
         Spacer(modifier = Modifier.height(15.dp))
+
+
         OutlinedTextField(
-            value = detail,
-            onValueChange = { detail = it },
-            label = { Text("Detail") },
+            value = subTitle,
+            onValueChange = { subTitle = it },
+            label = { Text("Subtitle") },
             modifier = Modifier.fillMaxWidth()
         )
+
         Spacer(modifier = Modifier.height(24.dp))
+
         Button(
             onClick = {
-                val task = TaskModel(title.text, detail.text)
-                onAddClick(task)
-            }, modifier = Modifier
+                val task = TaskModel(
+                    id = taskModel?.id ?: 0,
+                    title = title.text,
+                    subTitle = subTitle.text,
+                    status = taskModel?.status ?: TaskStatus.New
+                )
+
+                if (taskModel == null) {
+                    onAddClick(task)
+                } else {
+                    onEditClick(task)
+                }
+            },
+            modifier = Modifier
                 .fillMaxWidth()
-
                 .height(56.dp),
-
-
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9395D3)) // Light purple button
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9395D3))
         ) {
-
             Text(
-                text = "ADD",
+                text = if (taskModel == null) "ADD" else "EDIT",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.White,
@@ -84,12 +93,14 @@ fun AddTaskScreen(modifier: Modifier, onAddClick: ((TaskModel) -> Unit)) {
             )
         }
     }
-
-
 }
 
 @Preview(showBackground = true)
 @Composable
 fun AddTaskScreenPreview() {
-    AddTaskScreen(Modifier, onAddClick = {})
+    AddEditTaskScreen(
+        modifier = Modifier,
+        onAddClick = {},
+        onEditClick = {}
+    )
 }
